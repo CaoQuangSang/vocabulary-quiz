@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocabulary Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        .correct {
+            color: green;
+        }
+        .incorrect {
+            color: red;
+        }
+        .button-container {
+            margin-top: 20px;
+        }
+        button {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vocabulary Management</h1>
+    <div id="input-section">
+        <h2>Thêm từ vựng mới</h2>
+        <label for="vietnamese">Nghĩa tiếng Việt:</label>
+        <input type="text" id="vietnamese" />
+        <label for="german">Từ tiếng Đức:</label>
+        <input type="text" id="german" />
+        <button onclick="addVocabulary()">Thêm</button>
+    </div>
+
+    <h1>Vocabulary Quiz</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Nghĩa tiếng Việt</th>
+                <th>Câu trả lời (tiếng Đức)</th>
+                <th>Phản hồi</th>
+                <th>Đáp án đúng</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody id="quiz-body">
+            <!-- Rows will be dynamically inserted here -->
+        </tbody>
+    </table>
+    <div class="button-container">
+        <button onclick="checkAnswers()">Kiểm tra</button>
+        <button onclick="resetAnswers()">Xóa tất cả đáp án</button>
+        <button onclick="deleteIncorrectAnswersAndVietnamese()">Xóa các ô sai cùng nghĩa tiếng Việt</button>
+    </div>
+
+    <script>
+        // Data storage for vocabulary
+        let vocabulary = [
+            { vietnamese: "đầu bếp (nam)", german: "r. Koch" },
+            { vietnamese: "nhà hàng", german: "s.Restaurant" },
+            { vietnamese: "kỹ sư", german: "r. Ingenieur" },
+            { vietnamese: "thư ký (nam)", german: "r.Sekretär" }
+        ];
+
+        const quizBody = document.getElementById('quiz-body');
+
+        // Render vocabulary rows
+        function renderQuiz() {
+            quizBody.innerHTML = '';
+            vocabulary.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.id = `row-${index}`;
+                row.innerHTML = `
+                    <td id="vietnamese-${index}">${item.vietnamese}</td>
+                    <td><input type="text" id="answer-${index}" /></td>
+                    <td id="feedback-${index}"></td>
+                    <td id="correct-${index}"></td>
+                    <td><button onclick="deleteAnswer(${index})">Xóa ô</button></td>
+                `;
+                quizBody.appendChild(row);
+            });
+        }
+
+        // Add new vocabulary
+        function addVocabulary() {
+            const vietnamese = document.getElementById('vietnamese').value.trim();
+            const german = document.getElementById('german').value.trim();
+            if (vietnamese && german) {
+                vocabulary.push({ vietnamese, german });
+                renderQuiz();
+                document.getElementById('vietnamese').value = '';
+                document.getElementById('german').value = '';
+            } else {
+                alert("Vui lòng nhập đầy đủ cả nghĩa tiếng Việt và từ tiếng Đức!");
+            }
+        }
+
+        // Check answers
+        function checkAnswers() {
+            vocabulary.forEach((item, index) => {
+                const userAnswer = document.getElementById(`answer-${index}`).value.trim();
+                const feedbackCell = document.getElementById(`feedback-${index}`);
+                const correctCell = document.getElementById(`correct-${index}`);
+
+                if (userAnswer) { // Kiểm tra chỉ khi người dùng đã nhập câu trả lời
+                    if (userAnswer === item.german) {
+                        feedbackCell.textContent = "Đúng";
+                        feedbackCell.className = "correct";
+                        correctCell.textContent = "";
+                    } else {
+                        feedbackCell.textContent = "Sai";
+                        feedbackCell.className = "incorrect";
+                        correctCell.textContent = item.german;
+                    }
+                } else {
+                    feedbackCell.textContent = "";
+                    correctCell.textContent = "";
+                }
+            });
+        }
+
+        // Reset all answers
+        function resetAnswers() {
+            vocabulary.forEach((_, index) => {
+                document.getElementById(`answer-${index}`).value = '';
+                document.getElementById(`feedback-${index}`).textContent = '';
+                document.getElementById(`correct-${index}`).textContent = '';
+            });
+        }
+
+        // Delete a single answer
+        function deleteAnswer(index) {
+            document.getElementById(`answer-${index}`).value = '';
+            document.getElementById(`feedback-${index}`).textContent = '';
+            document.getElementById(`correct-${index}`).textContent = '';
+            document.getElementById(`vietnamese-${index}`).textContent = '';
+        }
+
+        // Delete incorrect answers and their Vietnamese meanings
+        function deleteIncorrectAnswersAndVietnamese() {
+            vocabulary.forEach((item, index) => {
+                const userAnswer = document.getElementById(`answer-${index}`).value.trim();
+                const feedbackCell = document.getElementById(`feedback-${index}`);
+                if (userAnswer && userAnswer !== item.german) {
+                    document.getElementById(`row-${index}`).remove();
+                }
+            });
+        }
+
+        // Initialize quiz
+        renderQuiz();
+    </script>
+</body>
+</html>
